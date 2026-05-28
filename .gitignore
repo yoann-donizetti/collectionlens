@@ -71,6 +71,7 @@ logs/
 data/raw/*
 data/interim/*
 data/processed/*
+data/external/nudger
 
 # Keep folder structure
 
