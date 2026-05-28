@@ -1,0 +1,132 @@
+# =========================
+
+# Python
+
+# =========================
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+
+# =========================
+
+# Virtual environments
+
+# =========================
+
+.venv/
+venv/
+env/
+
+# =========================
+
+# Jupyter
+
+# =========================
+
+.ipynb_checkpoints/
+
+# =========================
+
+# Environment variables
+
+# =========================
+
+.env
+.env.*
+
+# =========================
+
+# VS Code
+
+# =========================
+
+.vscode/
+
+# =========================
+
+# OS files
+
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+
+# Logs
+
+# =========================
+
+logs/
+*.log
+
+# =========================
+
+# Data files
+
+# =========================
+
+data/raw/*
+data/interim/*
+data/processed/*
+
+# Keep folder structure
+
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# =========================
+
+# ML / AI artifacts
+
+# =========================
+
+mlruns/
+artifacts/
+models/
+vectorstore/
+
+# Keep folder structure
+
+!vectorstore/.gitkeep
+
+# =========================
+
+# Streamlit
+
+# =========================
+
+.streamlit/secrets.toml
+
+# =========================
+
+# Pytest / coverage
+
+# =========================
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+
+# Build
+
+# =========================
+
+build/
+dist/
+*.egg-info/
+
+# =========================
+
+# Temporary files
+
+# =========================
+
+temp/
+tmp/
+*.tmp
