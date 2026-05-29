@@ -90,25 +90,18 @@ def normalize_book(item: dict, isbn_query: str, status_code: int | None) -> dict
     Returns:
         Dictionnaire normalisé exploitable dans CollectionLens.
     """
-    authors = [
-        author.get("name")
-        for author in item.get("authors", [])
-        if author.get("name")
-    ]
-
-    publishers = [
-        publisher.get("name")
-        for publisher in item.get("publishers", [])
-        if publisher.get("name")
-    ]
-
-    subjects = [
-        subject.get("name")
-        for subject in item.get("subjects", [])
-        if subject.get("name")
-    ]
+    authors = extract_names(item, "authors")
+    publishers = extract_names(item, "publishers")
+    subjects = extract_names(item, "subjects")
+    subject_people = extract_names(item, "subject_people")
+    subject_places = extract_names(item, "subject_places")
+    subject_times = extract_names(item, "subject_times")
 
     cover = item.get("cover", {})
+
+    cover_small = cover.get("small")
+    cover_medium = cover.get("medium")
+    cover_large = cover.get("large")
 
     return {
         "source": "openlibrary",
@@ -128,7 +121,14 @@ def normalize_book(item: dict, isbn_query: str, status_code: int | None) -> dict
         "language": None,
         "description": extract_description(item),
         "categories": subjects,
-        "thumbnail": cover.get("medium") or cover.get("large") or cover.get("small"),
+        "subjects": subjects,
+        "subject_people": subject_people,
+        "subject_places": subject_places,
+        "subject_times": subject_times,
+        "thumbnail": cover_medium or cover_large or cover_small,
+        "cover_small": cover_small,
+        "cover_medium": cover_medium,
+        "cover_large": cover_large,
         "page_count": item.get("number_of_pages"),
         "print_type": "BOOK",
         "maturity_rating": None,
@@ -141,16 +141,28 @@ def normalize_book(item: dict, isbn_query: str, status_code: int | None) -> dict
         "raw_data": item,
     }
 
+def extract_names(item: dict, field_name: str) -> list[str]:
+    """
+    Extrait une liste de noms depuis un champ OpenLibrary.
+
+    Args:
+        item: Résultat brut OpenLibrary.
+        field_name: Nom du champ contenant une liste de dictionnaires.
+
+    Returns:
+        Liste de noms.
+    """
+    values = item.get(field_name, [])
+
+    return [
+        value.get("name")
+        for value in values
+        if isinstance(value, dict) and value.get("name")
+    ]
 
 def extract_description(item: dict) -> str | None:
     """
     Extrait la description depuis un résultat OpenLibrary.
-
-    Args:
-        item: Résultat brut OpenLibrary.
-
-    Returns:
-        Description si disponible, sinon None.
     """
     description = item.get("description")
 
