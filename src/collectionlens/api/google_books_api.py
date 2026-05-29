@@ -141,6 +141,9 @@ def normalize_book(item: dict) -> dict:
     """
     volume_info = item.get("volumeInfo", {})
     image_links = volume_info.get("imageLinks", {})
+    search_info = item.get("searchInfo", {})
+
+    text_snippet = search_info.get("textSnippet")
 
     return {
         "source": "google_books",
@@ -153,7 +156,11 @@ def normalize_book(item: dict) -> dict:
         "publisher": volume_info.get("publisher"),
         "published_date": volume_info.get("publishedDate"),
         "language": volume_info.get("language"),
-        "description": volume_info.get("description"),
+        "description": (
+            volume_info.get("description")
+            or text_snippet
+        ),
+        "text_snippet": text_snippet,
         "categories": volume_info.get("categories", []),
         "thumbnail": image_links.get("thumbnail"),
         "page_count": volume_info.get("pageCount"),

@@ -12,6 +12,7 @@ Ce module permet de :
 import xmltodict
 
 import requests
+import re
 
 
 BNF_API_URL = "https://catalogue.bnf.fr/api/SRU"
@@ -93,7 +94,6 @@ def search_book_by_isbn(isbn: str) -> dict:
 
     if isinstance(records, list):
         record = records[0]
-
     else:
         record = records
 
@@ -126,6 +126,10 @@ def normalize_book(
         .get("oai_dc:dc", {})
     )
 
+    identifiers = ensure_list(
+        record_data.get("dc:identifier")
+    )
+
     return {
         "source": "bnf",
         "isbn_query": isbn_query,
@@ -133,9 +137,8 @@ def normalize_book(
         "error": None,
         "status_code": status_code,
 
-        "source_id": extract_first(
-            record_data.get("dc:identifier")
-        ),
+        "source_id": extract_bnf_ark(record_data),
+        "bnf_ark": extract_bnf_ark(record_data),
 
         "isbn": isbn_query,
 
@@ -169,7 +172,9 @@ def normalize_book(
 
         "thumbnail": None,
 
-        "page_count": None,
+        "page_count": extract_page_count(
+            extract_first(record_data.get("dc:format"))
+        ),
 
         "print_type": "BOOK",
 
@@ -181,9 +186,7 @@ def normalize_book(
         "info_link": None,
         "canonical_volume_link": None,
 
-        "industry_identifiers": ensure_list(
-            record_data.get("dc:identifier")
-        ),
+        "industry_identifiers": identifiers,
 
         "format": extract_first(
             record_data.get("dc:format")
@@ -225,6 +228,42 @@ def extract_first(value) -> str | None:
         return value[0]
 
     return value
+
+
+def extract_bnf_ark(record_data: dict) -> str | None:
+    """
+    Extrait l'identifiant ARK BNF depuis les identifiants Dublin Core.
+    """
+    identifiers = ensure_list(
+        record_data.get("dc:identifier")
+    )
+
+    for identifier in identifiers:
+        if (
+            isinstance(identifier, str)
+            and "ark:/12148/" in identifier
+        ):
+            return identifier
+
+    return None
+
+def extract_page_count(format_value: str | None) -> int | None:
+    """
+    Extrait le nombre de pages depuis le champ format BNF.
+
+    Exemples :
+    - "1 vol. (213 p.) : ill. ; 18 cm" -> 213
+    - "1 vol. (non paginé [272 p.]) ; 23 cm" -> 272
+    """
+    if not format_value:
+        return None
+
+    match = re.search(r"(\d+)\s*p\.", format_value)
+
+    if match:
+        return int(match.group(1))
+
+    return None
 
 
 def build_not_found_result(
